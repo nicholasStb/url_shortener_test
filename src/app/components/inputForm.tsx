@@ -25,6 +25,18 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
     };
 
     /**
+     * Validates the URL format using regex.
+     * 
+     * @param {string} url - The URL to validate.
+     * @returns {boolean} - Whether the URL is valid.
+     */
+    const isValidUrl = (url: string): boolean => {
+        const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+        const enhancedUrlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*\.(com|net|org|io|gov|edu|co|us|biz|info)$/i;
+        return urlRegex.test(url) && enhancedUrlRegex.test(url);
+    };
+
+    /**
      * Handles the form submission.
      * 
      * @param {FormEvent<HTMLFormElement>} e - The form event.
@@ -40,13 +52,11 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
         // Ensure the URL starts with http://, https://, or ftp://
         let formattedUrl = /^(https?|ftp):\/\//i.test(url.trim()) ? url.trim() : `http://${url.trim()}`;
 
-        try {
-            // Use the URL constructor to check the URL format
-            new URL(formattedUrl);
-        } catch (_) {
+        if (!isValidUrl(formattedUrl)) {
             toast.error('Invalid URL format');
             return;
         }
+
         // Call the onSubmit prop with the formatted URL
         onSubmit(formattedUrl);
         setUrl('');
@@ -66,6 +76,7 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
                     Shorten
                 </button>
             </form>
+            <ToastContainer />
         </>
     );
 };
