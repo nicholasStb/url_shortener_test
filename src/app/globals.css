@@ -18,16 +18,169 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+  font-family: 'Arial', sans-serif;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+.shortener-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
+.input-form {
+  display: flex;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.url-input {
+  flex-grow: 1;
+  padding: 10px;
+  color: black;
+  border: 1px solid #ccc;
+  border-radius: 5px 0 0 5px;
+  font-size: 16px;
+}
+
+.submit-button {
+  background-color: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 0 5px 5px 0;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.shortened-url {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f0f0f0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.shortened-url p {
+  margin: 0;
+}
+
+.copy-button-shorten,
+.copy-button {
+  background-color: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.copy-message {
+  text-align: center;
+  color: #4285f4;
+  margin-top: 10px;
+}
+
+.url-history {
+  color: black;
+  margin-top: 30px;
+  overflow: auto;
+}
+
+.url-history h2 {
+  color: black;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.url-history table {
+  width: 100%;
+  border-radius: 10px;
+  border-color: black;
+  border-width: 1px;
+  border-collapse: collapse;
+  background-color: #fff;
+}
+
+.url-history th,
+.url-history td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.url-history th {
+  color: black;
+  font-weight: bold;
+  background-color: #f7f7f7;
+}
+
+.url-history td {
+  word-break: break-word;
+}
+
+.url-history td:first-child {
+  width: 40%;
+}
+
+.url-history td:last-child {
+  width: 20%;
+  text-align: center;
+}
+
+.url-history button {
+  background-color: #f44336;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.url-history button:hover {
+  background-color: #d32f2f;
+}
+
+.url-link {
+  color: #4285f4;
+  text-decoration: underline;
+}
+
+@media only screen and (max-width: 600px) {
+
+  .url-history th:nth-child(3),
+  .url-history td:nth-child(3) {
+    display: none;
+  }
+
+  .url-history td:first-child,
+  .url-history td:nth-child(2) {
+    word-break: break-word;
+  }
+
+  .input-form {
+    flex-direction: column;
+  }
+
+  .url-input,
+  .submit-button {
+    border-radius: 5px;
+    margin-bottom: 10px;
   }
 }
