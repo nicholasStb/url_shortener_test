@@ -46,7 +46,6 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
     }, [shortUrl]);
 
     useEffect(() => {
-        console.log("originalURL!!!", originalUrl);
         if (originalUrl) {
             window.location.replace(originalUrl);
         }

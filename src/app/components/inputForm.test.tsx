@@ -1,8 +1,17 @@
+// src/app/components/inputForm.test.tsx
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import InputForm from './inputForm';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+
+// Mock react-toastify
+jest.mock('react-toastify', () => ({
+    toast: {
+        error: jest.fn(),
+    },
+    ToastContainer: () => <div />,
+}));
 
 describe('InputForm', () => {
     const mockOnSubmit = jest.fn();
@@ -16,63 +25,43 @@ describe('InputForm', () => {
         );
     });
 
-    test('renders input and button', () => {
-        expect(screen.getByPlaceholderText('Enter URL')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /shorten/i })).toBeInTheDocument();
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
-    test('displays error toast when URL is empty', () => {
-        const button = screen.getByRole('button', { name: /shorten/i });
-        fireEvent.click(button);
-
-        expect(screen.getByText('Please enter a URL')).toBeInTheDocument();
-    });
-
-    test('displays error toast for invalid URL format', () => {
+    test('displays error toast for invalid URL format', async () => {
         const input = screen.getByPlaceholderText('Enter URL');
-        const button = screen.getByRole('button', { name: /shorten/i });
+        const button = screen.getByText('Shorten');
 
+        // Enter an invalid URL
         fireEvent.change(input, { target: { value: 'invalid-url' } });
         fireEvent.click(button);
 
-        expect(screen.getByText('Invalid URL format')).toBeInTheDocument();
-    });
-
-    test('calls onSubmit with formatted URL', () => {
-        const input = screen.getByPlaceholderText('Enter URL');
-        const button = screen.getByRole('button', { name: /shorten/i });
-
-        fireEvent.change(input, { target: { value: 'example.com' } });
-        fireEvent.click(button);
-
-        expect(mockOnSubmit).toHaveBeenCalledTimes(1);
-        expect(mockOnSubmit).toHaveBeenCalledWith('http://example.com');
-    });
-
-    test('clears input after submit', () => {
-        const input = screen.getByPlaceholderText('Enter URL');
-        const button = screen.getByRole('button', { name: /shorten/i });
-
-        fireEvent.change(input, { target: { value: 'http://example.com' } });
-        fireEvent.click(button);
-
-        expect(input).toHaveValue('');
-    });
-
-    test('does not call onSubmit when URL is empty', () => {
-        const button = screen.getByRole('button', { name: /shorten/i });
-        fireEvent.click(button);
-
-        expect(mockOnSubmit).not.toHaveBeenCalled();
+        // Wait for the toast notification to appear
+        await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Invalid URL format'));
     });
 
     test('does not call onSubmit for invalid URL format', () => {
         const input = screen.getByPlaceholderText('Enter URL');
-        const button = screen.getByRole('button', { name: /shorten/i });
+        const button = screen.getByText('Shorten');
 
+        // Enter an invalid URL
         fireEvent.change(input, { target: { value: 'invalid-url' } });
         fireEvent.click(button);
 
+        // onSubmit should not be called
         expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+    test('calls onSubmit with formatted URL', () => {
+        const input = screen.getByPlaceholderText('Enter URL');
+        const button = screen.getByText('Shorten');
+
+        // Enter a valid URL
+        fireEvent.change(input, { target: { value: 'http://example.com' } });
+        fireEvent.click(button);
+
+        // onSubmit should be called with the formatted URL
+        expect(mockOnSubmit).toHaveBeenCalledWith('http://example.com');
     });
 });

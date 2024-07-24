@@ -1,4 +1,3 @@
-// src/app/components/urlHistory.test.tsx
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -6,12 +5,20 @@ import URLHistory from './urlHistory';
 import { Url } from '@/models/Url';
 import { ToastContainer } from 'react-toastify';
 
+// Mock react-toastify
 jest.mock('react-toastify', () => ({
     toast: {
         success: jest.fn(),
     },
     ToastContainer: () => <div />,
 }));
+
+// Mock navigator.clipboard.writeText
+Object.assign(navigator, {
+    clipboard: {
+        writeText: jest.fn(),
+    },
+});
 
 describe('URLHistory', () => {
     const mockUrls: Url[] = [
@@ -23,7 +30,7 @@ describe('URLHistory', () => {
             updatedAt: new Date('2023-07-01T12:00:00Z'),
         },
         {
-            id: 1,
+            id: 2,
             originalUrl: 'https://example.org',
             shortenUrl: 'short2',
             createdAt: new Date('2023-07-01T12:00:00Z'),
@@ -65,5 +72,6 @@ describe('URLHistory', () => {
         fireEvent.click(copyButton);
 
         expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`${window.location.origin}/short1`);
+        expect(require('react-toastify').toast.success).toHaveBeenCalledWith('URL copied to clipboard!');
     });
 });
