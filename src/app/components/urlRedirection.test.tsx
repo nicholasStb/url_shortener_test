@@ -19,8 +19,11 @@ describe('URLRedirection Component', () => {
         jest.clearAllMocks();
     });
 
-    it('should display loading state initially', () => {
-        render(<URLRedirection shortUrl="shortUrlTest" />);
+    it('should display loading state initially', async () => {
+        await act(async () => {
+            render(<URLRedirection shortUrl="shortUrlTest" />);
+        });
+
         expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
 
