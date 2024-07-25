@@ -76,7 +76,6 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
                     Shorten
                 </button>
             </form>
-            <ToastContainer />
         </>
     );
 };

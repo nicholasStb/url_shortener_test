@@ -7,6 +7,7 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
+    setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
     collectCoverage: true,
     collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!src/**/*.model.ts'],
     coveragePathIgnorePatterns: [

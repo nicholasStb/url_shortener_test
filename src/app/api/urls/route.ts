@@ -20,16 +20,6 @@ const generateShortUrl = (length = 6): string => {
  * @param {string} url - The original URL to normalize.
  * @returns {string} - The normalized URL.
  */
-const normalizeUrl = (url: string): string => {
-  try {
-    const parsedUrl = new URL(url.startsWith('http') ? url : `http://${url}`);
-    // Remove www prefix and trailing slash
-    return parsedUrl.hostname.replace(/^www\./, '') + parsedUrl.pathname.replace(/\/$/, '');
-  } catch {
-    // Return the original URL if parsing fails
-    return url;
-  }
-};
 
 /**
  * Handles GET requests to retrieve URLs.
@@ -97,8 +87,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }, { status: 400 });
     }
 
-    // const normalizedUrl = normalizeUrl(originalUrl);
-
     // Check if the URL already has a shortened version
     const existingUrl = await prisma.urls.findUnique({
       where: { originalUrl: originalUrl }
@@ -134,5 +122,3 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }, { status: 500 });
   }
 }
-
-export default { GET, POST };
