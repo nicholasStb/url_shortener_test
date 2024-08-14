@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface InputFormProps {
-    onSubmit: (url: string) => void;
+    onSubmit: (url: string, customShortName?: string) => void;
 }
 
 /**
@@ -14,14 +14,24 @@ interface InputFormProps {
  */
 const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
     const [url, setUrl] = useState<string>('');
+    const [customShortName, setCustomShortName] = useState<string>('');
 
     /**
-     * Handles the change event for the input field.
+     * Handles the change event for the URL input field.
      * 
      * @param {ChangeEvent<HTMLInputElement>} e - The change event.
      */
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
         setUrl(e.target.value);
+    };
+
+    /**
+     * Handles the change event for the custom short name input field.
+     * 
+     * @param {ChangeEvent<HTMLInputElement>} e - The change event.
+     */
+    const handleShortNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setCustomShortName(e.target.value);
     };
 
     /**
@@ -72,9 +82,15 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
             return;
         }
 
-        // Call the onSubmit prop with the formatted URL
-        onSubmit(formattedUrl);
+        if (containsSqlInjection(customShortName)) {
+            toast.error('Invalid input: potential SQL injection detected');
+            return;
+        }
+
+        // Call the onSubmit prop with the formatted URL and optional custom short name
+        onSubmit(formattedUrl, customShortName.trim() || undefined);
         setUrl('');
+        setCustomShortName('');
     };
 
     return (
@@ -84,8 +100,15 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
                     type="text"
                     className="url-input"
                     value={url}
-                    onChange={handleChange}
+                    onChange={handleUrlChange}
                     placeholder="Enter URL"
+                />
+                <input
+                    type="text"
+                    className="url-input"
+                    value={customShortName}
+                    onChange={handleShortNameChange}
+                    placeholder="Enter custom short name (optional)"
                 />
                 <button type="submit" className="submit-button">
                     Shorten

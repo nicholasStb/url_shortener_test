@@ -15,7 +15,7 @@ datasource db {
 
 model Urls {
   id           Int    @id @default(autoincrement())
-  originalUrl  String @unique
+  originalUrl  String @default("")
   shortenUrl   String @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())

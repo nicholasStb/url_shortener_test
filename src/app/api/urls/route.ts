@@ -97,8 +97,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    const { originalUrl } = await req.json();
+    const { originalUrl, customShortName } = await req.json();
 
+    console.log("customshortname", customShortName);
     // Sanitize the input to remove any potential harmful code
     const sanitizedUrl = sanitizeInput(originalUrl);
 
@@ -120,31 +121,35 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }, { status: 400 });
     }
 
-    // Check if the URL already has a shortened version
-    const existingUrl = await prisma.urls.findUnique({
-      where: { originalUrl: sanitizedUrl }
+    /// Determine the short URL (use custom or generate a random one)
+    let shortenUrl = customShortName?.trim();
+
+    if (!shortenUrl) {
+      shortenUrl = generateShortUrl();
+    }
+
+    // Check if the custom short name already exists
+    const existingCustomShortUrl = await prisma.urls.findUnique({
+      where: { shortenUrl }
     });
 
-    if (existingUrl) {
-      // Return the existing shortened URL
+    if (existingCustomShortUrl) {
       return NextResponse.json({
-        statusCode: 200,
-        data: 'Already Exists',
-        shortenUrl: existingUrl.shortenUrl
-      });
-    } else {
-      const shortenUrl = generateShortUrl();
-
-      // Save the new shortened URL
-      const urlModel = await prisma.urls.create({
-        data: { originalUrl: sanitizedUrl, shortenUrl },
-      });
-
-      return NextResponse.json({
-        statusCode: 201,
-        data: urlModel
-      });
+        statusCode: 400,
+        errorMessage: 'Custom short name already exists',
+        errorDetail: 'The custom short name provided is already in use. Please choose another one or leave it empty to auto-generate a name.'
+      }, { status: 400 });
     }
+
+    // Save the new shortened URL
+    const urlModel = await prisma.urls.create({
+      data: { originalUrl: sanitizedUrl, shortenUrl },
+    });
+
+    return NextResponse.json({
+      statusCode: 201,
+      data: urlModel
+    });
   } catch (error) {
     console.error('Error in POST request:', error);
     // Return a 500 response if an unexpected error occurs

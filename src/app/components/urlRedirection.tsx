@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 
 interface URLRedirectionProps {
     shortUrl: string;
@@ -10,6 +9,7 @@ interface URLRedirectionProps {
 /**
  * URLRedirection component handles fetching the original URL from the server
  * based on the provided short URL and redirects the user to the original URL.
+ * It includes a 5-second countdown before the redirection occurs.
  * 
  * @param {URLRedirectionProps} props - The props for the component, containing the short URL.
  * @returns {JSX.Element | null} - The rendered URLRedirection component or null if redirected.
@@ -18,6 +18,7 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
     const [originalUrl, setOriginalUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [countdown, setCountdown] = useState(5);
 
     useEffect(() => {
         /**
@@ -47,7 +48,18 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
 
     useEffect(() => {
         if (originalUrl) {
-            window.location.replace(originalUrl);
+            // Start the countdown once the original URL is fetched
+            const countdownInterval = setInterval(() => {
+                setCountdown(prev => {
+                    if (prev === 1) {
+                        clearInterval(countdownInterval);
+                        window.location.replace(originalUrl);
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(countdownInterval); // Clean up the interval on unmount
         }
     }, [originalUrl]);
 
@@ -59,7 +71,11 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
         return <div>{error}</div>;
     }
 
-    return null;
+    return (
+        <div>
+            <p>Redirecting in {countdown} seconds...</p>
+        </div>
+    );
 };
 
 export default URLRedirection;

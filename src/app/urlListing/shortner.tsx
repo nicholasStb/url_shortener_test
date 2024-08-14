@@ -41,19 +41,20 @@ const Shortener: React.FC = () => {
     };
 
     /**
-     * Handles form submission, sends the original URL to the server,
+     * Handles form submission, sends the original URL and custom short name (if any) to the server,
      * receives the shortened URL, and updates the state.
      * 
      * @param {string} url - The original URL to be shortened.
+     * @param {string} customShortName - The custom short name for the URL (optional).
      */
-    const handleSubmit = async (url: string) => {
+    const handleSubmit = async (url: string, customShortName?: string) => {
         try {
             const response = await fetch('/api/urls', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ originalUrl: url }),
+                body: JSON.stringify({ originalUrl: url, customShortName }), // Pass the customShortName
             });
 
             const data = await response.json();
@@ -99,7 +100,7 @@ const Shortener: React.FC = () => {
         <div className="shortener-container">
             <h1>URL Shortener</h1>
 
-            <InputForm onSubmit={handleSubmit} />
+            <InputForm onSubmit={handleSubmit} />  {/* The InputForm will call handleSubmit with customShortName */}
 
             {shortUrl && <ShortenedUrl url={shortUrl} onCopy={handleCopy} />}
 
