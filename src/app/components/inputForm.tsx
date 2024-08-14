@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface InputFormProps {
@@ -31,9 +31,19 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
      * @returns {boolean} - Whether the URL is valid.
      */
     const isValidUrl = (url: string): boolean => {
-        const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
-        const enhancedUrlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*\.(com|net|org|io|gov|edu|co|us|biz|info)$/i;
-        return urlRegex.test(url) && enhancedUrlRegex.test(url);
+        const urlRegex = /^(https?|ftp):\/\/([^\s$.?#].[^\s]*)$/i;
+        return urlRegex.test(url);
+    };
+
+    /**
+     * Checks for potential SQL Injection patterns in the URL.
+     * 
+     * @param {string} input - The URL to check.
+     * @returns {boolean} - Whether the input contains suspicious patterns.
+     */
+    const containsSqlInjection = (input: string): boolean => {
+        const sqlInjectionPattern = /('|"|;|--|\/\*|\*\/|DROP|SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|EXEC|UNION|DECLARE)/i;
+        return sqlInjectionPattern.test(input);
     };
 
     /**
@@ -49,8 +59,13 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
             return;
         }
 
+        if (containsSqlInjection(url)) {
+            toast.error('Invalid input: potential SQL injection detected');
+            return;
+        }
+
         // Ensure the URL starts with http://, https://, or ftp://
-        let formattedUrl = /^(https?|ftp):\/\//i.test(url.trim()) ? url.trim() : `http://${url.trim()}`;
+        const formattedUrl = /^(https?|ftp):\/\//i.test(url.trim()) ? url.trim() : `http://${url.trim()}`;
 
         if (!isValidUrl(formattedUrl)) {
             toast.error('Invalid URL format');

@@ -15,11 +15,29 @@ const generateShortUrl = (length = 6): string => {
 };
 
 /**
- * Normalizes the given URL by ensuring it has a proper format.
+ * Basic input sanitization to remove potentially harmful SQL injection patterns.
  * 
- * @param {string} url - The original URL to normalize.
- * @returns {string} - The normalized URL.
+ * @param {string} input - The input string to sanitize.
+ * @returns {string} - The sanitized string.
  */
+const sanitizeInput = (input: string): string => {
+  return input.replace(/('|"|;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|DECLARE|ALTER|CREATE)\b)/gi, '');
+};
+
+/**
+ * Validates the URL format.
+ * 
+ * @param {string} url - The URL to validate.
+ * @returns {boolean} - Whether the URL is valid.
+ */
+const isValidUrl = (url: string): boolean => {
+  try {
+    new URL(url); // Using URL constructor to validate the URL format
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
 
 /**
  * Handles GET requests to retrieve URLs.
@@ -35,9 +53,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   try {
     if (originalUrl) {
+      // Sanitize the input to prevent injection attacks
+      const sanitizedUrl = sanitizeInput(originalUrl);
+
       // Fetch a specific shortened URL based on the original URL
       const urlModel = await prisma.urls.findUnique({
-        where: { originalUrl }
+        where: { originalUrl: sanitizedUrl }
       });
 
       if (urlModel) {
@@ -78,8 +99,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const { originalUrl } = await req.json();
 
+    // Sanitize the input to remove any potential harmful code
+    const sanitizedUrl = sanitizeInput(originalUrl);
+
     // Validate the URL length and format
-    if (!originalUrl || originalUrl.length < 5) {
+    if (!sanitizedUrl || sanitizedUrl.length < 5) {
       return NextResponse.json({
         statusCode: 400,
         errorMessage: 'Invalid URL or URL is too short',
@@ -87,9 +111,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }, { status: 400 });
     }
 
+    // Validate that the input is a properly formatted URL
+    if (!isValidUrl(sanitizedUrl)) {
+      return NextResponse.json({
+        statusCode: 400,
+        errorMessage: 'Invalid URL format',
+        errorDetail: 'The URL provided is not in a valid format.'
+      }, { status: 400 });
+    }
+
     // Check if the URL already has a shortened version
     const existingUrl = await prisma.urls.findUnique({
-      where: { originalUrl: originalUrl }
+      where: { originalUrl: sanitizedUrl }
     });
 
     if (existingUrl) {
@@ -104,7 +137,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       // Save the new shortened URL
       const urlModel = await prisma.urls.create({
-        data: { originalUrl: originalUrl, shortenUrl },
+        data: { originalUrl: sanitizedUrl, shortenUrl },
       });
 
       return NextResponse.json({
