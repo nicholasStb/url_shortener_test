@@ -69,3 +69,13 @@ export const formatDate = (date: Date): string => {
     const formattedTime = date.toLocaleTimeString();
     return `${formattedDate} ${formattedTime}`;
 };
+
+/**
+ * Ensures the URL starts with http://, https://, or ftp://.
+ * 
+ * @param {string} url - The URL to format.
+ * @returns {string} - The formatted URL.
+ */
+export const formatUrl = (url: string): string => {
+    return /^(https?|ftp):\/\//i.test(url.trim()) ? url.trim() : `http://${url.trim()}`;
+};

@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { isValidUrlRegex, containsSqlInjection } from '../../utils/helpers';
+import { isValidUrlRegex, containsSqlInjection, formatUrl } from '../../utils/helpers';
 
 interface InputFormProps {
     onSubmit: (url: string, customShortName?: string) => void;
@@ -54,7 +54,7 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
         }
 
         // Ensure the URL starts with http://, https://, or ftp://
-        const formattedUrl = /^(https?|ftp):\/\//i.test(url.trim()) ? url.trim() : `http://${url.trim()}`;
+        const formattedUrl = formatUrl(url);
 
         if (!isValidUrlRegex(formattedUrl)) {
             toast.error('Invalid URL format');
