@@ -1,0 +1,1 @@
+export const UPDATE_HISTORY_KEY = "update-history";

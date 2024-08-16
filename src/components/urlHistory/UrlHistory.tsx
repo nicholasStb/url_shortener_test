@@ -6,11 +6,13 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchAllUrls } from '@/actions/getUrls';
 import { formatDate } from '@/utils/helpers';
+import '../../constants/broadcastChannelKeys';
+import { UPDATE_HISTORY_KEY } from '../../constants/broadcastChannelKeys';
 
 const URLHistory: React.FC = () => {
     const { urls, setUrls, setLoading, setError, loading } = useUrlStore();
     // Create a BroadcastChannel instance
-    const channel = new BroadcastChannel('update-history');
+    const channel = new BroadcastChannel(UPDATE_HISTORY_KEY);
 
     // Listen for messages
     channel.onmessage = () => {

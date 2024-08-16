@@ -6,13 +6,14 @@ import ShortenedUrl from '../urlShortner/UrlShortner';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { postShortenUrl } from '../../actions/postShortenUrl';
+import { UPDATE_HISTORY_KEY } from '../../constants/broadcastChannelKeys';
 
 
 const Shortener: React.FC = () => {
     const [shortUrl, setShortUrl] = useState<string>('');
     const [copied, setCopied] = useState<boolean>(false);
     // Create a BroadcastChannel instance
-    const channel = new BroadcastChannel('update-history');
+    const channel = new BroadcastChannel(UPDATE_HISTORY_KEY);
 
     /**
      * Handles form submission, sends the original URL and custom short name (if any) to the server,

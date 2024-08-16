@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { postRedirectionUrl } from '../../actions/postRedirectionUrl';
+import { UPDATE_HISTORY_KEY } from '../../constants/broadcastChannelKeys';
 
 interface URLRedirectionProps {
     shortUrl: string;
@@ -20,7 +21,7 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [countdown, setCountdown] = useState(5);
-    const channel = new BroadcastChannel('update-history');
+    const channel = new BroadcastChannel(UPDATE_HISTORY_KEY);
 
     useEffect(() => {
         /**
