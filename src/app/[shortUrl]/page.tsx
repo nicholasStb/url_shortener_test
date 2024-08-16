@@ -1,5 +1,5 @@
 // Import the URLRedirection component
-import URLRedirection from '../components/urlRedirection';
+import URLRedirection from '../../components/urlRedirection/UrlRedirection';
 
 // Define the props interface for the RedirectPage component
 interface RedirectPageProps {

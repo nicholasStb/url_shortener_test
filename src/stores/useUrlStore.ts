@@ -1,14 +1,5 @@
 import { create } from "zustand";
-
-interface Url {
-    id: number;
-    originalUrl: string;
-    shortenUrl: string;
-    createdAt: Date;
-    updatedAt: Date;
-    description: string;
-    usageCount: number;
-}
+import { Url } from '@/models/Url';
 
 interface UrlStore {
     urls: Url[];

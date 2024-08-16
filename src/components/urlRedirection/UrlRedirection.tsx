@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { postRedirectionUrl } from '../../actions/postRedirectionUrl';
 
 interface URLRedirectionProps {
     shortUrl: string;
@@ -22,49 +23,27 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
     const channel = new BroadcastChannel('update-history');
 
     useEffect(() => {
-        let didCancel = false;
-
         /**
          * Fetches the original URL from the server based on the short URL.
          */
         const fetchOriginalUrl = async () => {
             try {
-                const response = await fetch('/api/urls/rerouting', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ shortUrl }),
-                });
+                const { originalUrl, errorMessage } = await postRedirectionUrl(shortUrl);
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch the original URL');
-                }
-
-                const data = await response.json();
-                if (!didCancel) {
-                    if (data.data) {
-                        setOriginalUrl(data.data);
-                    } else {
-                        setError('URL not found');
-                    }
+                if (originalUrl) {
+                    setOriginalUrl(originalUrl);
+                } else {
+                    setError(errorMessage || 'URL not found');
                 }
             } catch (error) {
-                if (!didCancel) {
-                    setError((error as Error).message);
-                }
+                setError((error as Error).message);
             } finally {
-                if (!didCancel) {
-                    setLoading(false);
-                }
+                setLoading(false);
             }
         };
 
         fetchOriginalUrl();
 
-        return () => {
-            didCancel = true;
-        };
     }, [shortUrl]);
 
     useEffect(() => {

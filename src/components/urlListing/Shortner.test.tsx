@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Shortener from '@/app/urlListing/shortner';
+import Shortener from './Shortner';
 import { toast, ToastContainer } from 'react-toastify';
 import fetchMock from 'jest-fetch-mock';
 

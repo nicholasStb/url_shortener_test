@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import URLRedirection from './urlRedirection';
+import URLRedirection from './UrlRedirection';
 
 // Mocking the window.location.replace method
 const originalLocationReplace = window.location.replace;

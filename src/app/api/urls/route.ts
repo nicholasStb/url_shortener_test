@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
-import { randomBytes } from 'crypto';
+import { isValidUrl, sanitizeInput, generateShortUrl } from '../../../utils/helpers';
 
 const prisma = new PrismaClient();
 
@@ -97,40 +97,3 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }, { status: 500 });
   }
 }
-
-// Add helper functions
-/**
- * Basic input sanitization to remove potentially harmful SQL injection patterns.
- * 
- * @param {string} input - The input string to sanitize.
- * @returns {string} - The sanitized string.
- */
-const sanitizeInput = (input: string): string => {
-  return input.replace(/('|"|;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|DECLARE|ALTER|CREATE)\b)/gi, '');
-};
-
-
-/**
- * Validates the URL format.
- * 
- * @param {string} url - The URL to validate.
- * @returns {boolean} - Whether the URL is valid.
- */
-const isValidUrl = (url: string): boolean => {
-  try {
-    new URL(url); // Using URL constructor to validate the URL format
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
-/**
- * Generates a random shortened URL of a specified length.
- * 
- * @param {number} length - The length of the shortened URL to generate.
- * @returns {string} - The generated shortened URL.
- */
-const generateShortUrl = (length = 6): string => {
-  return randomBytes(length).toString('base64url').substring(0, length);
-};

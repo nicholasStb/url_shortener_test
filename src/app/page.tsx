@@ -1,8 +1,16 @@
-import Shortener from "./urlListing/shortner";
-import './layout';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+'use client';
 
-export default function Urls() {
-  return <Shortener />
-}
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+const HomePage = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/home');
+  }, [router]);
+
+  return null;
+};
+
+export default HomePage;

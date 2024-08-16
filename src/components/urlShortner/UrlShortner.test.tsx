@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom'; // Import for toBeInTheDocument matcher
-import ShortenedUrl from './urlShortner';
+import ShortenedUrl from './UrlShortner';
 
 // Mocking the clipboard API
 Object.assign(navigator, {

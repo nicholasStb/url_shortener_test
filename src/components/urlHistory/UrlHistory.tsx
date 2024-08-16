@@ -1,22 +1,41 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUrlStore } from '@/stores/useUrlStore';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { fetchAllUrls } from '@/actions/getUrls';
+import { formatDate } from '@/utils/helpers';
 
 const URLHistory: React.FC = () => {
-    const { urls } = useUrlStore();
+    const { urls, setUrls, setLoading, setError, loading } = useUrlStore();
+    // Create a BroadcastChannel instance
+    const channel = new BroadcastChannel('update-history');
+
+    // Listen for messages
+    channel.onmessage = () => {
+        loadUrls();
+        channel.close();
+    };
+    // Fetch URLs on component mount
+    useEffect(() => {
+        loadUrls();
+    }, []);
 
     /**
-     * Formats a date object into a readable string.
-     * 
-     * @param {Date} date - The date to format.
-     * @returns {string} - The formatted date string.
+     * Fetches all URLs from the server and updates the state.
      */
-    const formatDate = (date: Date): string => {
-        const formattedDate = date.toLocaleDateString();
-        const formattedTime = date.toLocaleTimeString();
-        return `${formattedDate} ${formattedTime}`;
+    const loadUrls = async () => {
+        setLoading(true); // Set loading to true
+        try {
+            const fetchedUrls = await fetchAllUrls(); // Fetch URLs using the action
+            setUrls(fetchedUrls); // Update the state with fetched URLs
+        } catch (error) {
+            setError((error as Error).message); // Set error if something goes wrong
+            toast.error(`Error: ${(error as Error).message}`); // Show error message as a toast
+        } finally {
+            setLoading(false); // Set loading to false when done
+        }
     };
 
     /**
@@ -30,7 +49,9 @@ const URLHistory: React.FC = () => {
         toast.success('URL copied to clipboard!');
     };
 
-    if (urls.length === 0) {
+    if (loading) {
+        return <p>Loading...</p>;
+    } else if (urls.length === 0) {
         return <p>No URL history available.</p>;
     }
 
@@ -71,6 +92,8 @@ const URLHistory: React.FC = () => {
                     ))}
                 </tbody>
             </table>
+
+            <ToastContainer />
         </div>
     );
 };
