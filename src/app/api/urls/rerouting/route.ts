@@ -3,28 +3,26 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
-/**
- * GET request handler for retrieving the original URL based on a shortened URL.
- * 
- * @param {NextRequest} req - The incoming request object.
- * @returns {Promise<NextResponse>} - The response object containing the status code and data or error message.
- */
-export async function GET(req: NextRequest): Promise<NextResponse> {
-    const { searchParams } = new URL(req.url);
-    const shortUrl = searchParams.get('shortUrl');
+export async function POST(req: NextRequest): Promise<NextResponse> {
+    console.log("Received POST request");
 
     try {
+        const { shortUrl } = await req.json();
+        console.log("Short URL:", shortUrl);
+
         if (shortUrl) {
             // Find the URL model in the database using the shortened URL
-            const urlModel = await prisma.urls.findUnique({
-                where: { shortenUrl: shortUrl }
+            const updatedUrl = await prisma.urls.update({
+                where: { shortenUrl: shortUrl },
+                data: { usageCount: { increment: 1 }, updatedAt: new Date() },
             });
 
-            if (urlModel) {
-                // Return the original URL if found
+            console.log("Updated URL:", updatedUrl);
+
+            if (updatedUrl) {
                 return NextResponse.json({
                     statusCode: 200,
-                    data: urlModel.originalUrl
+                    data: updatedUrl.originalUrl
                 });
             } else {
                 // Return a 404 response if the shortened URL does not exist in the database
@@ -39,7 +37,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({
                 statusCode: 400,
                 errorMessage: 'Short URL not provided',
-                errorDetail: 'The request is missing the shortUrl query parameter.'
+                errorDetail: 'The request is missing the shortUrl in the body.'
             }, { status: 400 });
         }
     } catch (error) {

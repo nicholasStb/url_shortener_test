@@ -4,4 +4,5 @@ export type Url = {
     shortenUrl: string;
     createdAt: Date;
     updatedAt: Date;
+    usageCount: number;
 }

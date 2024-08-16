@@ -14,10 +14,11 @@ datasource db {
 }
 
 model Urls {
-  id           Int    @id @default(autoincrement())
-  originalUrl  String @default("")
-  shortenUrl   String @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-  description String @default("")
+  id           Int      @id @default(autoincrement())
+  originalUrl  String   @default("")
+  shortenUrl   String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+  description  String   @default("")
+  usageCount   Int      @default(0)
 }

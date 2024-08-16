@@ -1,22 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Url } from '@/models/Url';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useUrlStore } from '@/stores/useUrlStore';
+import { toast } from 'react-toastify';
 
-interface URLHistoryProps {
-    urls: Url[];
-}
-
-/**
- * URLHistory component displays a table of original and shortened URLs along with their creation dates.
- * Provides an option to copy the shortened URL to the clipboard.
- * 
- * @param {URLHistoryProps} props - The props for the component, containing an array of URL objects.
- * @returns {JSX.Element} - The rendered URLHistory component.
- */
-const URLHistory: React.FC<URLHistoryProps> = ({ urls }) => {
+const URLHistory: React.FC = () => {
+    const { urls } = useUrlStore();
 
     /**
      * Formats a date object into a readable string.
@@ -45,6 +34,8 @@ const URLHistory: React.FC<URLHistoryProps> = ({ urls }) => {
         return <p>No URL history available.</p>;
     }
 
+    // console.log('from urlHistory', urls)
+
     return (
         <div className="url-history">
             <h2>URL History</h2>
@@ -53,12 +44,13 @@ const URLHistory: React.FC<URLHistoryProps> = ({ urls }) => {
                     <tr>
                         <th>Original URL</th>
                         <th>Shortened URL</th>
-                        <th>Created At</th>
+                        <th>Updated At</th>
+                        <th>Usage Count</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {urls.map(({ originalUrl, shortenUrl, createdAt }, index) => (
+                    {urls.map(({ originalUrl, shortenUrl, updatedAt, usageCount }, index) => (
                         <tr key={index}>
                             <td>
                                 <a href={originalUrl} target="_blank" rel="noopener noreferrer" className="url-link">
@@ -70,7 +62,8 @@ const URLHistory: React.FC<URLHistoryProps> = ({ urls }) => {
                                     {`${window.location.origin}/${shortenUrl}`}
                                 </a>
                             </td>
-                            <td>{formatDate(new Date(createdAt))}</td>
+                            <td>{formatDate(new Date(updatedAt))}</td>
+                            <td>{usageCount}</td>
                             <td>
                                 <button onClick={() => copyToClipboard(shortenUrl)}>Copy</button>
                             </td>

@@ -1,20 +1,25 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import InputForm from '../components/inputForm';
 import ShortenedUrl from '../components/urlShortner';
 import URLHistory from '../components/urlHistory';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Url } from '@/models/Url';
+import { useUrlStore } from '@/stores/useUrlStore';
 
 const Shortener: React.FC = () => {
+    const { urls, setUrls, setLoading, setError } = useUrlStore();
     const [shortUrl, setShortUrl] = useState<string>('');
     const [copied, setCopied] = useState<boolean>(false);
-    const [urls, setUrls] = useState<Url[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    // Create a BroadcastChannel instance
+    const channel = new BroadcastChannel('update-history');
 
+    // Listen for messages
+    channel.onmessage = () => {
+        fetchAllUrls();
+        channel.close();
+    };
     // Fetch URLs on component mount
     useEffect(() => {
         fetchAllUrls();
@@ -24,6 +29,7 @@ const Shortener: React.FC = () => {
      * Fetches all URLs from the server and updates the state.
      */
     const fetchAllUrls = async () => {
+        setLoading(true);
         try {
             const response = await fetch('/api/urls');
             if (!response.ok) {
@@ -58,23 +64,16 @@ const Shortener: React.FC = () => {
             });
 
             const data = await response.json();
-
-            // Check if URL already exists
-            if (data.data === 'Already Exists') {
+            if (data.errorMessage) {
                 const fullShortUrl = `${window.location.origin}/${data.shortenUrl}`;
                 setShortUrl(fullShortUrl);
                 navigator.clipboard.writeText(fullShortUrl);
-                toast.error('URL already exists and copied to clipboard');
-                return; // Exit early to prevent further execution
-            } else {
-                // Set the shortened URL from server response
-                const fullShortUrl = `${window.location.origin}/${data.data.shortenUrl}`;
-                setShortUrl(fullShortUrl);
+                toast.error(data.errorMessage);
+                return;
             }
-
-            // Refresh URL history after successful submission
-            await fetchAllUrls();
-
+            const fullShortUrl = `${window.location.origin}/${data.data.shortenUrl}`;
+            setShortUrl(fullShortUrl);
+            fetchAllUrls();
         } catch (error) {
             console.error('Error:', error);
             toast.error('Failed to shorten URL');
@@ -89,12 +88,9 @@ const Shortener: React.FC = () => {
         setCopied(true);
         setTimeout(() => {
             setCopied(false);
-            setShortUrl(''); // Hide the shortened URL
+            setShortUrl('');
         }, 3000);
     };
-
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
 
     return (
         <div className="shortener-container">
@@ -106,7 +102,7 @@ const Shortener: React.FC = () => {
 
             {copied && <p className="copy-message">URL copied to clipboard!</p>}
 
-            <URLHistory urls={urls} /> {/* Pass the URL history data as a prop */}
+            <URLHistory />
 
             <ToastContainer />
         </div>

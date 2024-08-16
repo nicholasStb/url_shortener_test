@@ -19,31 +19,52 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [countdown, setCountdown] = useState(5);
+    const channel = new BroadcastChannel('update-history');
 
     useEffect(() => {
+        let didCancel = false;
+
         /**
          * Fetches the original URL from the server based on the short URL.
          */
         const fetchOriginalUrl = async () => {
             try {
-                const response = await fetch(`/api/urls/rerouting?shortUrl=${shortUrl}`);
+                const response = await fetch('/api/urls/rerouting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ shortUrl }),
+                });
+
                 if (!response.ok) {
                     throw new Error('Failed to fetch the original URL');
                 }
+
                 const data = await response.json();
-                if (data.data) {
-                    setOriginalUrl(data.data);
-                } else {
-                    setError('URL not found');
+                if (!didCancel) {
+                    if (data.data) {
+                        setOriginalUrl(data.data);
+                    } else {
+                        setError('URL not found');
+                    }
                 }
             } catch (error) {
-                setError((error as Error).message);
+                if (!didCancel) {
+                    setError((error as Error).message);
+                }
             } finally {
-                setLoading(false);
+                if (!didCancel) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchOriginalUrl();
+
+        return () => {
+            didCancel = true;
+        };
     }, [shortUrl]);
 
     useEffect(() => {
@@ -54,6 +75,7 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
                     if (prev === 1) {
                         clearInterval(countdownInterval);
                         window.location.replace(originalUrl);
+                        channel.postMessage({ update: true });
                     }
                     return prev - 1;
                 });
@@ -68,7 +90,7 @@ const URLRedirection: React.FC<URLRedirectionProps> = ({ shortUrl }) => {
     }
 
     if (error) {
-        return <div>{error}</div>;
+        return <div>Error: {error}</div>;
     }
 
     return (

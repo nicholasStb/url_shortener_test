@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Urls" ADD COLUMN     "usageCount" INTEGER NOT NULL DEFAULT 0;
