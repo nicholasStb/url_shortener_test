@@ -6,58 +6,61 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchAllUrls } from '@/actions/getUrls';
 import { formatDate } from '@/utils/helpers';
-import '../../constants/broadcastChannelKeys';
 import { UPDATE_HISTORY_KEY } from '../../constants/broadcastChannelKeys';
 
 const URLHistory: React.FC = () => {
-    const { urls, setUrls, setLoading, setError, loading } = useUrlStore();
-    // Create a BroadcastChannel instance
-    const channel = new BroadcastChannel(UPDATE_HISTORY_KEY);
+    const { urls, setUrls, setLoading, setError, loading } = useUrlStore(); // Zustand store to manage URLs, loading, and error states
+    const channel = new BroadcastChannel(UPDATE_HISTORY_KEY); // Create a BroadcastChannel instance with a specific key
 
-    // Listen for messages
+    /**
+     * Sets up a listener for the BroadcastChannel to reload URLs when a message is received.
+     * This helps keep the URL history in sync across different tabs or components.
+     */
     channel.onmessage = () => {
-        loadUrls();
-        channel.close();
+        loadUrls(); // Reload the URLs when a message is received
+        channel.close(); // Close the channel after the message is received to prevent further listening
     };
-    // Fetch URLs on component mount
+
+    // Fetch URLs when the component mounts (i.e., on initial render)
     useEffect(() => {
         loadUrls();
     }, []);
 
     /**
-     * Fetches all URLs from the server and updates the state.
+     * Function to fetch all URLs from the server and update the state accordingly.
+     * It sets the loading state, handles errors, and updates the URL list.
      */
     const loadUrls = async () => {
-        setLoading(true); // Set loading to true
+        setLoading(true); // Start by setting loading to true
         try {
-            const fetchedUrls = await fetchAllUrls(); // Fetch URLs using the action
-            setUrls(fetchedUrls); // Update the state with fetched URLs
+            const fetchedUrls = await fetchAllUrls(); // Fetch all URLs from the server
+            setUrls(fetchedUrls); // Store the fetched URLs in the state
         } catch (error) {
-            setError((error as Error).message); // Set error if something goes wrong
-            toast.error(`Error: ${(error as Error).message}`); // Show error message as a toast
+            setError((error as Error).message); // Handle any errors that occur during the fetch
+            toast.error(`Error: ${(error as Error).message}`); // Show an error toast notification
         } finally {
-            setLoading(false); // Set loading to false when done
+            setLoading(false); // Ensure loading is set to false when done, regardless of success or failure
         }
     };
 
     /**
-     * Copies the given text to the clipboard and displays a success toast notification.
+     * Function to copy a shortened URL to the clipboard and display a success toast notification.
      * 
-     * @param {string} text - The text to copy to the clipboard.
+     * @param {string} text - The shortened URL text to be copied.
      */
     const copyToClipboard = (text: string) => {
-        const fullShortUrl = `${window.location.origin}/${text}`;
-        navigator.clipboard.writeText(fullShortUrl);
-        toast.success('URL copied to clipboard!');
+        const fullShortUrl = `${window.location.origin}/${text}`; // Construct the full shortened URL with the domain
+        navigator.clipboard.writeText(fullShortUrl); // Write the full shortened URL to the clipboard
+        toast.success('URL copied to clipboard!'); // Show a success toast notification
     };
 
+    // If the component is still loading data, display a loading message
     if (loading) {
         return <p>Loading...</p>;
     } else if (urls.length === 0) {
+        // If there are no URLs, display a message indicating that the history is empty
         return <p>No URL history available.</p>;
     }
-
-    // console.log('from urlHistory', urls)
 
     return (
         <div className="url-history">
@@ -85,17 +88,17 @@ const URLHistory: React.FC = () => {
                                     {`${window.location.origin}/${shortenUrl}`}
                                 </a>
                             </td>
-                            <td>{formatDate(new Date(updatedAt))}</td>
-                            <td>{usageCount}</td>
+                            <td>{formatDate(new Date(updatedAt))}</td> {/* Format the update date using the helper function */}
+                            <td>{usageCount}</td> {/* Display the usage count for the shortened URL */}
                             <td>
-                                <button onClick={() => copyToClipboard(shortenUrl)}>Copy</button>
+                                <button onClick={() => copyToClipboard(shortenUrl)}>Copy</button> {/* Button to copy the shortened URL */}
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
-            <ToastContainer />
+            <ToastContainer /> {/* Container for displaying toast notifications */}
         </div>
     );
 };

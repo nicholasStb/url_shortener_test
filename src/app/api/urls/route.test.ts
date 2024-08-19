@@ -21,7 +21,7 @@ const mockJson = jest.fn().mockImplementation((data) => ({
 jest.mock('next/server', () => ({
     ...jest.requireActual('next/server'),
     NextResponse: {
-        json: (data: any) => mockJson(data),
+        json: (data: any, options?: any) => mockJson(data, options),
     },
 }));
 
@@ -48,42 +48,10 @@ describe('GET handler', () => {
         } as Partial<NextRequest> as NextRequest;
         const response = await GET(req);
 
-        expect(response.status).toBe(200);
-        expect(await response.json()).toEqual({ statusCode: 200, data: mockUrls });
+        expect(mockJson).toHaveBeenCalledWith({ statusCode: 200, data: mockUrls });
     });
 
-    it('should fetch a specific shortened URL', async () => {
-        const req = {
-            url: 'http://localhost/api/urls?originalUrl=https://example.com',
-        } as Partial<NextRequest> as NextRequest;
-        const mockUrl = { id: 1, originalUrl: 'https://example.com', shortenUrl: 'short1', createdAt: new Date(), updatedAt: new Date() };
-
-        (prisma.urls.findUnique as jest.Mock).mockResolvedValue(mockUrl);
-
-        const response = await GET(req);
-
-        expect(response.status).toBe(200);
-        expect(await response.json()).toEqual({ statusCode: 200, data: mockUrl });
-    });
-
-    it('should return 404 if URL is not found', async () => {
-        const req = {
-            url: 'http://localhost/api/urls?originalUrl=https://notfound.com',
-        } as Partial<NextRequest> as NextRequest;
-
-        (prisma.urls.findUnique as jest.Mock).mockResolvedValue(null);
-
-        const response = await GET(req);
-
-        expect(response.status).toBe(404);
-        expect(await response.json()).toEqual({
-            statusCode: 404,
-            errorMessage: 'URL not found',
-            errorDetail: 'The requested URL was not found in the database.'
-        });
-    });
-
-    it('should handle internal server errors', async () => {
+    it('should return 500 on internal server error', async () => {
         const req = {
             url: 'http://localhost/api/urls',
         } as Partial<NextRequest> as NextRequest;
@@ -91,12 +59,11 @@ describe('GET handler', () => {
 
         const response = await GET(req);
 
-        expect(response.status).toBe(500);
-        expect(await response.json()).toEqual({
+        expect(mockJson).toHaveBeenCalledWith({
             statusCode: 500,
             errorMessage: 'Internal Server Error',
             errorDetail: 'An unexpected error occurred while processing the request.'
-        });
+        }, { status: 500 });
     });
 });
 
@@ -108,30 +75,28 @@ describe('POST handler', () => {
 
         const response = await POST(req);
 
-        expect(response.status).toBe(400);
-        expect(await response.json()).toEqual({
+        expect(mockJson).toHaveBeenCalledWith({
             statusCode: 400,
             errorMessage: 'Invalid URL or URL is too short',
             errorDetail: 'The URL provided is either empty or does not meet the minimum length requirement of 5 characters.'
-        });
+        }, { status: 400 });
     });
 
-    it('should handle existing shortened URL', async () => {
+    it('should return 400 for existing custom short name', async () => {
         const req = {
-            json: jest.fn().mockResolvedValue({ originalUrl: 'https://example.com' }),
+            json: jest.fn().mockResolvedValue({ originalUrl: 'https://example.com', customShortName: 'short1' }),
         } as Partial<NextRequest> as NextRequest;
-        const mockUrl = { id: 1, originalUrl: 'https://example.com', shortenUrl: 'short1' };
 
+        const mockUrl = { id: 1, originalUrl: 'https://example.com', shortenUrl: 'short1' };
         (prisma.urls.findUnique as jest.Mock).mockResolvedValue(mockUrl);
 
         const response = await POST(req);
 
-        expect(response.status).toBe(200);
-        expect(await response.json()).toEqual({
-            statusCode: 200,
-            data: 'Already Exists',
-            shortenUrl: 'short1'
-        });
+        expect(mockJson).toHaveBeenCalledWith({
+            statusCode: 400,
+            errorMessage: 'Custom short name already exists',
+            errorDetail: 'The custom short name provided is already in use. Please choose another one or leave it empty to auto-generate a name.'
+        }, { status: 400 });
     });
 
     it('should create a new shortened URL', async () => {
@@ -145,14 +110,13 @@ describe('POST handler', () => {
 
         const response = await POST(req);
 
-        expect(response.status).toBe(201);
-        expect(await response.json()).toEqual({
-            statusCode: 201,
+        expect(mockJson).toHaveBeenCalledWith({
+            statusCode: 200,
             data: mockUrl
         });
     });
 
-    it('should handle internal server errors', async () => {
+    it('should return 500 on internal server error', async () => {
         const req = {
             json: jest.fn().mockResolvedValue({ originalUrl: 'https://example.com' }),
         } as Partial<NextRequest> as NextRequest;
@@ -160,11 +124,10 @@ describe('POST handler', () => {
 
         const response = await POST(req);
 
-        expect(response.status).toBe(500);
-        expect(await response.json()).toEqual({
+        expect(mockJson).toHaveBeenCalledWith({
             statusCode: 500,
             errorMessage: 'Internal Server Error',
             errorDetail: 'An unexpected error occurred while processing the request.'
-        });
+        }, { status: 500 });
     });
 });

@@ -3,8 +3,8 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom';
 import Shortener from './Shortner';
 import { toast, ToastContainer } from 'react-toastify';
-import fetchMock from 'jest-fetch-mock';
 
+// Mock react-toastify
 jest.mock('react-toastify', () => ({
     toast: {
         success: jest.fn(),
@@ -13,8 +13,15 @@ jest.mock('react-toastify', () => ({
     ToastContainer: () => <div />,
 }));
 
+// Mock the postShortenUrl function
+import { postShortenUrl } from '../../actions/postShortenUrl';
+
+jest.mock('../../actions/postShortenUrl');
+
 beforeEach(() => {
-    fetchMock.resetMocks();
+    // Reset the mock between tests
+    jest.clearAllMocks();
+
     // Mocking navigator.clipboard
     Object.assign(navigator, {
         clipboard: {
@@ -24,28 +31,12 @@ beforeEach(() => {
 });
 
 describe('Shortener', () => {
-    it('fetches and displays URL history on mount', async () => {
-        fetchMock.mockResponseOnce(
-            JSON.stringify({ data: [{ id: 1, originalUrl: 'https://example.com', shortenUrl: 'short1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }] })
-        );
-
-        await act(async () => {
-            render(<Shortener />);
-        });
-
-        await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/urls'));
-        expect(screen.getByText('https://example.com')).toBeInTheDocument();
-        expect(screen.getByText(`${window.location.origin}/short1`)).toBeInTheDocument();
-    });
-
     it('displays error toast if URL already exists', async () => {
-        fetchMock.mockResponses(
-            [
-                JSON.stringify({ data: [{ id: 1, originalUrl: 'https://example.com', shortenUrl: 'short1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }] }),
-                { status: 200 },
-            ],
-            [JSON.stringify({ data: 'Already Exists', shortenUrl: 'short1' }), { status: 200 }]
-        );
+        const mockShortUrl = 'short1';
+        (postShortenUrl as jest.Mock).mockResolvedValueOnce({
+            shortenedUrl: mockShortUrl,
+            errorMessage: 'URL already exists and copied to clipboard',
+        });
 
         await act(async () => {
             render(
@@ -63,11 +54,11 @@ describe('Shortener', () => {
         fireEvent.click(button);
 
         await waitFor(() => expect(toast.error).toHaveBeenCalledWith('URL already exists and copied to clipboard'));
-        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`${window.location.origin}/short1`);
+        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`${window.location.origin}/${mockShortUrl}`);
     });
 
-    it('displays error toast on fetch failure', async () => {
-        fetchMock.mockRejectOnce(new Error('Failed to fetch'));
+    it('displays error toast on URL shortening failure', async () => {
+        (postShortenUrl as jest.Mock).mockRejectedValueOnce(new Error('Failed to shorten URL'));
 
         await act(async () => {
             render(
@@ -87,14 +78,9 @@ describe('Shortener', () => {
         await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to shorten URL'));
     });
 
-    it('handles successful URL shortening and updates history', async () => {
-        fetchMock.mockResponses(
-            [
-                JSON.stringify({ data: [{ id: 1, originalUrl: 'https://example.com', shortenUrl: 'short1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }] }),
-                { status: 200 },
-            ],
-            [JSON.stringify({ data: { shortenUrl: 'short2' } }), { status: 200 }]
-        );
+    it('handles successful URL shortening', async () => {
+        const mockShortUrl = 'short2';
+        (postShortenUrl as jest.Mock).mockResolvedValueOnce({ shortenedUrl: mockShortUrl });
 
         await act(async () => {
             render(<Shortener />);
@@ -106,8 +92,7 @@ describe('Shortener', () => {
         fireEvent.change(input, { target: { value: 'https://example.org' } });
         fireEvent.click(button);
 
-        await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/urls', expect.any(Object)));
-        await waitFor(() => expect(screen.getByText('https://example.org')).toBeInTheDocument());
-        await waitFor(() => expect(screen.getByText(`${window.location.origin}/short2`)).toBeInTheDocument());
+        await waitFor(() => expect(postShortenUrl).toHaveBeenCalledWith('https://example.org', undefined));
+        await waitFor(() => expect(screen.getByText(`${window.location.origin}/${mockShortUrl}`)).toBeInTheDocument());
     });
 });

@@ -1,6 +1,10 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import URLRedirection from './UrlRedirection';
+import { postRedirectionUrl } from '../../actions/postRedirectionUrl';
+
+// Mock the postRedirectionUrl function
+jest.mock('../../actions/postRedirectionUrl');
 
 // Mocking the window.location.replace method
 const originalLocationReplace = window.location.replace;
@@ -28,13 +32,10 @@ describe('URLRedirection Component', () => {
     });
 
     it('should redirect to the original URL on successful fetch', async () => {
-        // Mock the fetch response
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve({ data: 'https://example.com' }),
-            }) as Promise<Response>
-        );
+        // Mock the postRedirectionUrl response
+        (postRedirectionUrl as jest.Mock).mockResolvedValueOnce({
+            originalUrl: 'https://example.com',
+        });
 
         await act(async () => {
             render(<URLRedirection shortUrl="shortUrlTest" />);
@@ -44,32 +45,30 @@ describe('URLRedirection Component', () => {
         await waitFor(() => expect(window.location.replace).toHaveBeenCalledWith('https://example.com'));
     });
 
-    it('should display error message if fetch fails', async () => {
-        // Mock the fetch response to simulate an error
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: false,
-                json: () => Promise.resolve({}),
-            }) as Promise<Response>
-        );
+    it('should display error message if URL not found', async () => {
+        // Mock the postRedirectionUrl response to simulate a not found error
+        (postRedirectionUrl as jest.Mock).mockResolvedValueOnce({
+            originalUrl: null,
+            errorMessage: 'URL not found',
+        });
 
         await act(async () => {
             render(<URLRedirection shortUrl="shortUrlTest" />);
         });
 
         // Wait for the error message to appear
-        await waitFor(() => expect(screen.getByText('URL not found')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('Error: URL not found')).toBeInTheDocument());
     });
 
     it('should display error message if fetch throws an exception', async () => {
-        // Mock the fetch response to throw an error
-        global.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
+        // Mock the postRedirectionUrl response to throw an error
+        (postRedirectionUrl as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
         await act(async () => {
             render(<URLRedirection shortUrl="shortUrlTest" />);
         });
 
         // Wait for the error message to appear
-        await waitFor(() => expect(screen.getByText('Network error')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('Error: Network error')).toBeInTheDocument());
     });
 });
