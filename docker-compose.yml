@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespwd
+      POSTGRES_DB: url_shortener
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - nextjs_network
+
+  nextjs:
+    image: node:18
+    container_name: nextjs_app
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    networks:
+      - nextjs_network
+    environment:
+      PGPASSWORD: postgrespwd
+    env_file:
+      - .env  
+    depends_on:
+      - db
+    command: sh -c "apt-get update && apt-get install -y ca-certificates && update-ca-certificates && npm install && npx prisma migrate deploy && npm run dev"
+
+volumes:
+  postgres_data:
+
+networks:
+  nextjs_network:
+    driver: bridge
