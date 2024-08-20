@@ -1,48 +1,102 @@
-Next.js URL Shortener
-This project is a URL shortener application built with Next.js, PostgreSQL, and Docker.
+# Next.js URL Shortener
 
-Getting Started
-This README covers the necessary steps to set up Docker, Prisma, and run the development server for your Next.js project. Adjust any specific instructions based on your project's actual configurations and requirements.
+Welcome to the Next.js URL Shortener project! This application allows you to shorten URLs, track usage, and manage your links, all built with Next.js, PostgreSQL, and Docker.
 
-Setting up the Docker based environments and required infrastructure.
-Docker Engine: Make sure Docker Engine is installed and running on your machine. You can download it from the Docker website.(https://docs.docker.com/get-docker/)
-Docker Compose: Install Docker Compose, which is a tool for defining and running multi-container Docker applications. It’s often included with Docker Desktop, but you can also install it separately if needed.
-Installation
-Clone the repository : git clone https://github.com/nicholasStb/url_shortener_test
-Open a command prompt/terminal and change directory into the cloned code base. (using 'cd' command)
-Create and start the Docker containers
-Execute command 'docker-compose up --build' in the command prompt/terminal
+## Getting Started
 
-This command will:
-Pull the necessary Docker images.
-Create and start the PostgreSQL and Next.js containers.
-Install the necessary Node.js dependencies.
-Run database migrations using Prisma.
-Start the Next.js development server.
-Access the application
-Open http://localhost:3000 with your browser to see the result.
+This guide will walk you through setting up and running the URL Shortener application using Docker, Prisma, and Next.js. Please follow the steps below to get everything up and running on your machine.
 
-Extra Information
-Services
-PostgreSQL: Accessible on port 5432.
-Next.js: Accessible on port 3000.
-Environment Variables
-The following environment variables are used in the docker-compose.yml file
+### Prerequisites
 
-POSTGRES_USER: The PostgreSQL username.
-POSTGRES_PASSWORD: The PostgreSQL password.
-POSTGRES_DB: The PostgreSQL database name.
-PGPASSWORD: The PostgreSQL password for the Next.js application.
-Volumns
-postgres_data: Stores the PostgreSQL data.
+Before you begin, make sure you have the following installed:
 
-Networks
-nextjs_network: The network used by the PostgreSQL and Next.js containers.
+- **Docker Engine**: Ensure that Docker Engine is installed and running on your machine. You can download it from the [Docker website](https://docs.docker.com/get-docker/).
+- **Docker Compose**: Docker Compose is included with Docker Desktop, but if needed, you can install it separately. This tool is used for defining and running multi-container Docker applications.
 
-Commands
-Start the containers: docker-compose up -d Stop the containers: docker-compose down View logs: docker-compose logs -f
+### Installation
 
-Learn More
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the Repository**
 
-Next.js Documentation - learn about Next.js features and API. Learn Next.js - an interactive Next.js tutorial. You can check out the Next.js GitHub repository - your feedback and contributions are welcome!
+   Open your terminal and clone the repository to your local machine:
+   ```bash
+   git clone https://github.com/nicholasStb/url_shortener_test
+   ```
+
+2. **Navigate to the Project Directory**
+
+   Change to the project directory:
+   ```bash
+   cd url_shortener_test
+   ```
+
+3. **Create and Start the Docker Containers**
+
+   Build and start the Docker containers by running the following command:
+   ```bash
+   docker-compose up --build
+   ```
+
+   This command will:
+   - Pull the necessary Docker images.
+   - Create and start the PostgreSQL and Next.js containers.
+   - Install the required Node.js dependencies.
+   - Run database migrations using Prisma.
+   - Start the Next.js development server.
+
+4. **Access the Application**
+
+   Once the setup is complete, you can access the application by opening your browser and navigating to:
+   ```
+   http://localhost:3000
+   ```
+
+### Additional Information
+
+#### Services
+
+- **PostgreSQL**: Accessible on port `5432`.
+- **Next.js**: Accessible on port `3000`.
+
+#### Environment Variables
+
+The following environment variables are used in the `docker-compose.yml` file:
+
+- `POSTGRES_USER`: The PostgreSQL username.
+- `POSTGRES_PASSWORD`: The PostgreSQL password.
+- `POSTGRES_DB`: The PostgreSQL database name.
+- `PGPASSWORD`: The PostgreSQL password for the Next.js application.
+
+#### Volumes
+
+- **postgres_data**: This volume is used to persist PostgreSQL data.
+
+#### Networks
+
+- **nextjs_network**: The network used by the PostgreSQL and Next.js containers.
+
+### Useful Commands
+
+- **Start the containers**: 
+  ```bash
+  docker-compose up -d
+  ```
+- **Stop the containers**:
+  ```bash
+  docker-compose down
+  ```
+- **View logs**:
+  ```bash
+  docker-compose logs -f
+  ```
+
+### Learn More
+
+To dive deeper into Next.js, check out the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features and APIs.
+- [Learn Next.js](https://nextjs.org/learn) - An interactive Next.js tutorial.
+- [Next.js GitHub Repository](https://github.com/vercel/next.js) - Your feedback and contributions are welcome!
+
+---
+
+Happy coding! If you have any issues or questions, feel free to open an issue on the repository.
